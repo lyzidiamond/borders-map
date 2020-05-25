@@ -1,0 +1,19 @@
+{
+  "name": "state-borders",
+  "version": "1.0.0",
+  "description": "let's see how this goes",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "ejs": "^3.1.2",
+    "express": "^4.17.1",
+    "nodemon": "^2.0.3",
+    "watch": "^1.0.2"
+  }
+}

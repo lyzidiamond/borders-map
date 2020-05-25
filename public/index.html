@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v1.10.0/mapbox-gl.js'></script>
+    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v1.10.0/mapbox-gl.css' rel='stylesheet' />
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <style>
+      body {
+        color: #404040;
+        font: 400 15px/22px 'Source Sans Pro', 'Helvetica Neue', Sans-serif;
+        margin: 0;
+        padding: 0;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      * {
+        -webkit-box-sizing: border-box;
+        -moz-box-sizing: border-box;
+        box-sizing: border-box;
+      }
+
+      h1 {
+        font-size: 22px;
+        margin: 0;
+        font-weight: 400;
+        line-height: 20px;
+        padding: 20px 2px;
+      }
+
+      a {
+        color: #404040;
+        text-decoration: none;
+      }
+
+      a:hover {
+        color: #101010;
+      }
+
+      .sidebar {
+        position: absolute;
+        width: 33.3333%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        overflow: hidden;
+        border-right: 1px solid rgba(0, 0, 0, 0.25);
+      }
+
+      .pad2 {
+        padding: 20px;
+      }
+
+      .map {
+        position: absolute;
+        left: 33.3333%;
+        width: 66.6666%;
+        top: 0;
+        bottom: 0;
+      }
+
+      .heading {
+        background: #fff;
+        border-bottom: 1px solid #eee;
+        height: 60px;
+        line-height: 60px;
+        padding: 0 10px;
+      }
+
+      .listings {
+        height: 100%;
+        overflow: auto;
+        padding-bottom: 60px;
+      }
+
+      .listings .item {
+        display: block;
+        border-bottom: 1px solid #eee;
+        padding: 10px;
+        text-decoration: none;
+      }
+
+      .listings .item:last-child { border-bottom: none; }
+
+      .listings .item .title {
+        display: block;
+        color: #00853e;
+        font-weight: 700;
+      }
+
+      .listings .item .title small { font-weight: 400; }
+
+      .listings .item.active .title,
+      .listings .item .title:hover { color: #8cc63f; }
+
+      .listings .item.active {
+        background-color: #f8f8f8;
+      }
+
+      ::-webkit-scrollbar {
+        width: 3px;
+        height: 3px;
+        border-left: 0;
+        background: rgba(0, 0, 0, 0.1);
+      }
+
+      ::-webkit-scrollbar-track {
+        background: none;
+      }
+
+      ::-webkit-scrollbar-thumb {
+        background: #00853e;
+        border-radius: 0;
+      }
+
+      .clearfix { display: block; }
+
+      .clearfix::after {
+        content: '.';
+        display: block;
+        height: 0;
+        clear: both;
+        visibility: hidden;
+      }
+
+    </style>
+    
+  </head>
+  <body>
+    <div class='sidebar'>
+      <div class='heading'>
+        <h1>Borders</h1>
+      </div>
+      <div id='listings' class='listings'></div>
+    </div>
+    <div id='map' class='map'>Map</div>
+
+    <script>
+      //mapbox
+
+      mapboxgl.accessToken = 'pk.eyJ1IjoibHl6aWRpYW1vbmQiLCJhIjoiRkh4OW9layJ9.P2o48WlCqjhGmqoFJl3C_A'
+
+      const map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/lyzidiamond/ck9ri15pc5mk31jntkhxpym1s',
+        center: [-95.586748, 39.953842],
+        zoom: 2
+      })
+      let hoveredStateId = null
+
+      map.on('load', function() {
+        map.addSource('states-source', {
+          'type': 'vector',
+          'url': 'mapbox://lyzidiamond.61a1omhc'
+        })
+        map.addLayer({
+          'id': 'states-layer-hover',
+          'type': 'line',
+          'source': 'states-source',
+          'source-layer': 'state-borders-testfile-052420-98jz1f',
+          'layout': {
+            'line-join': 'round',
+            'line-cap': 'round'
+          },
+          'paint': {
+            'line-color': '#ff69b4',
+            'line-width': [
+              'case',
+              ['boolean', ['feature-state', 'hover'], false],
+              5,
+              2
+            ]
+          }
+        })
+        
+        map.on('mousemove', 'states-layer-hover', e => {
+          // var bbox = [
+          //   [e.point.x - 5, e.point.y - 5],
+          //   [e.point.x + 5, e.point.y + 5]
+          // ];
+          // let boxed = map.queryRenderedFeatures(bbox, { layers: ['states-layer-hover']})
+          // console.log(boxed)
+          // if (boxed.length > 0) {
+            if (e.features.length > 0) {
+            if (hoveredStateId) {
+              map.setFeatureState( {
+                source: 'states-source',
+                sourceLayer: 'state-borders-testfile-052420-98jz1f', id: hoveredStateId
+              }, {
+                hover: false
+              })
+            }
+            hoveredStateId = e.features[0].id
+            map.setFeatureState({
+              source: 'states-source', sourceLayer: 'state-borders-testfile-052420-98jz1f', id: hoveredStateId
+            }, {
+              hover: true
+            })
+          }
+        })
+        map.on('mouseleave', 'states-layer-hover', () => {
+          if (hoveredStateId) {
+            map.setFeatureState(
+              { source: 'states-source', sourceLayer: 'state-borders-testfile-052420-98jz1f', id: hoveredStateId }, {
+                hover: false
+              }
+            )
+          }
+        })
+      })
+    </script>
+    
+
+    <script>
+      
+
+    </script>
+
+    <script>
+
+    </script>
+    
+  </body>
+</html>
