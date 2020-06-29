@@ -132,37 +132,51 @@
       </div>
       <div id='listings' class='listings'></div>
     </div>
-    <div id='map' class='map'>Map</div>
+    <div id='map' class='map'></div>
 
     <script>
+      // load initial data from airtable (the whole thing)
+      // join it with geojson stored in separate file to load in memory
+
+      // types of interactions
+      // user clicks map
+      // user clicks tag
+      // user searches tag
+
       //mapbox
 
       mapboxgl.accessToken = 'pk.eyJ1IjoibHl6aWRpYW1vbmQiLCJhIjoiRkh4OW9layJ9.P2o48WlCqjhGmqoFJl3C_A'
 
       const map = new mapboxgl.Map({
         container: 'map',
-        style: 'mapbox://styles/lyzidiamond/ck9ri15pc5mk31jntkhxpym1s',
+        style: 'mapbox://styles/lyzidiamond/ck9ri15pc5mk31jntkhxpym1s/draft',
         center: [-95.586748, 39.953842],
         zoom: 2
       })
       let hoveredStateId = null
+      let activeMap = false // is something on the map active
 
       map.on('load', function() {
+
         map.addSource('states-source', {
-          'type': 'vector',
-          'url': 'mapbox://lyzidiamond.61a1omhc'
+          'type': 'geojson',
+          'data': './borders-test-gj.geojson'
         })
         map.addLayer({
-          'id': 'states-layer-hover',
+          'id': 'states-layer',
           'type': 'line',
           'source': 'states-source',
-          'source-layer': 'state-borders-testfile-052420-98jz1f',
           'layout': {
             'line-join': 'round',
             'line-cap': 'round'
           },
           'paint': {
-            'line-color': '#ff69b4',
+            'line-color': 
+            // [
+            //   'case',
+            //   ['string', ['feature-state', 'active'], '']
+            // ],
+            '#ff69b4',
             'line-width': [
               'case',
               ['boolean', ['feature-state', 'hover'], false],
@@ -170,54 +184,68 @@
               2
             ]
           }
-        })
+        }, 'road-label-simple')
         
-        map.on('mousemove', 'states-layer-hover', e => {
-          // var bbox = [
-          //   [e.point.x - 5, e.point.y - 5],
-          //   [e.point.x + 5, e.point.y + 5]
-          // ];
-          // let boxed = map.queryRenderedFeatures(bbox, { layers: ['states-layer-hover']})
-          // console.log(boxed)
-          // if (boxed.length > 0) {
-            if (e.features.length > 0) {
+        map.on('mousemove', 'states-layer', e => {
+          if (e.features.length > 0) {
+            // change the cursor to a pointer when hovering
+            map.getCanvas().style.cursor = 'pointer';
+            // if feature is already highlighted, set hover state to false
             if (hoveredStateId) {
               map.setFeatureState( {
                 source: 'states-source',
-                sourceLayer: 'state-borders-testfile-052420-98jz1f', id: hoveredStateId
+                id: hoveredStateId
               }, {
                 hover: false
               })
             }
-            hoveredStateId = e.features[0].id
+            // set hoveredStateId to current feature
+            hoveredStateId = e.features[0].properties.tagid
+            // set hover state to true on current feature
             map.setFeatureState({
-              source: 'states-source', sourceLayer: 'state-borders-testfile-052420-98jz1f', id: hoveredStateId
+              source: 'states-source', id: hoveredStateId
             }, {
               hover: true
             })
+            console.log('set feature state to hover true')
+            console.log()
           }
         })
-        map.on('mouseleave', 'states-layer-hover', () => {
+        map.on('mouseleave', 'states-layer', () => {
+          // change the pointer back
+          map.getCanvas().style.cursor = ''
+          // change the boldness
           if (hoveredStateId) {
             map.setFeatureState(
-              { source: 'states-source', sourceLayer: 'state-borders-testfile-052420-98jz1f', id: hoveredStateId }, {
+              { source: 'states-source', id: hoveredStateId }, {
                 hover: false
               }
             )
           }
         })
+        // map.on('click', e => {
+        //   const features = map.queryRenderedFeatures(e.point)
+        //   if (features.length > 0) {
+        //     activeMap = true
+        //     // could string together 
+        //     let coordinates = features[0].geometry.coordinates
+        //     let bounds = coordinates.reduce(function(bounds, coord) {
+        //       return bounds.extend(coord)
+        //     }, new mapboxgl.LngLatBounds(coordinates[0], coordinates[0]))
+        //     map.fitBounds(bounds, {
+        //       padding: 200
+        //     })
+
+        //     // zoom to feature
+        //     // change style
+        //     // query the data in memory
+        //   } else {
+        //     // aka when they click on a not-feature
+        //     // reset style
+
+        //   }
+        // })
       })
     </script>
-    
-
-    <script>
-      
-
-    </script>
-
-    <script>
-
-    </script>
-    
   </body>
 </html>
